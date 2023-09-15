@@ -1,3 +1,5 @@
 VENV\
 VENV\*
-.idea\
+.idea\*
+/VENV/
+.idea/*
