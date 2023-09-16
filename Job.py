@@ -9,9 +9,9 @@ class Job:
         self.skills = skills
         self.experience = experiences
         self.start_date = start_date
-        self.end_state = end_date
+        self.end_date = end_date
 
     def __str__(self):
         return f"Job[title='{self.title}', description='{self.description}', definition='{self.definition}', " \
                f"education='{self.education}', specialisation='{self.specialisation}' , skills='{self.skills}'" \
-               f"experience='{self.experience}', startDate='{self.start_date}', endDate='{self.end_state}']"
+               f"experience='{self.experience}', startDate='{self.start_date}', endDate='{self.end_date}']"

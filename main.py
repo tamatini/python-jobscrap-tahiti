@@ -1,6 +1,7 @@
 from Job import Job
 from bs4 import BeautifulSoup
 from requests import get
+import sqlite3
 
 start_url = "https://www.aravihi.gov.pf/offre-de-emploi/liste-offres.aspx"
 job_links = []
@@ -10,9 +11,9 @@ def scrap_page(url):
     request = get(url)
     soup = BeautifulSoup(request.text, "html.parser")
     next_page = soup.find("a", id="ctl00_ctl00_corpsRoot_corps_PaginationLower_linkSuivPage")
+    set_job(get_job_url(url))
     if next_page is not None:
         href = next_page.get("href")
-        set_job(get_job_url(href))
         scrap_page(href)
     else:
         pass
@@ -39,7 +40,7 @@ def set_job(url):
         skills = is_valid(soup.find("p", id="fldapplicantcriteria_longtext2")).split(";")
         experience = is_valid(soup.find("p", id="fldapplicantcriteria_freecriteria2"))
         end_date = is_valid(soup.find("p", id="fldoffercustomblock1_date1"))
-        print(Job(title, description, definitions, education, specialisation, skills, experience, "", end_date))
+        save_jobs(Job(title, description, definitions, education, specialisation, skills, experience, "", end_date))
 
 
 def is_valid(el):
@@ -54,8 +55,39 @@ def scrap_jobs():
         print(set_job(soup))
 
 
+def connect():
+    return sqlite3.connect('joblist.db')
+
+
+def save_jobs(job):
+    conn = connect()
+
+    query = '''INSERT INTO jobs(title, description, definition, education, specialisation, skills, experience, 
+        start_date, end_date) VALUES (:title, :description, :definition , :education, :specialisation, :skills, 
+        :experience, :start_date, :end_date)'''
+    with conn:
+        cur = conn.cursor()
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS jobs(id integer PRIMARY KEY AUTOINCREMENT, title text, 
+            description text, definition text, education text, specialisation text, skills text, experience text,
+            start_date text, end_date text)
+        ''')
+        cur.execute(query, {
+            'title': job.title,
+            'description': job.description,
+            'definition': str(job.definition),
+            'education': job.education,
+            'specialisation': job.specialisation,
+            'skills': str(job.skills),
+            'experience': job.experience,
+            'start_date': job.start_date,
+            'end_date': job.end_date
+        })
+
+
 def main():
     scrap_page(start_url)
+
     #scrap_jobs()
 
 
